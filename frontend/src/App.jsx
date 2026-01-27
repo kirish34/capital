@@ -31,11 +31,12 @@ function App() {
 
   // crude route switcher without react-router
   const path = window.location.pathname.toLowerCase();
+  const isPublic = path.startsWith('/public');
 
-  const topbar = (
+  const topbar = session ? (
     <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200 bg-white">
       <div className="text-sm text-slate-600">
-        Signed in as <span className="font-medium text-slate-800">{session.user?.email}</span>
+        Signed in as <span className="font-medium text-slate-800">{session?.user?.email}</span>
       </div>
       <div className="flex items-center gap-3 text-xs text-slate-500">
         <span>Routes: /admin /landlord /caretaker /tenant /tenant/bills /tenant/issues</span>
@@ -44,10 +45,10 @@ function App() {
         </button>
       </div>
     </div>
-  );
+  ) : null;
 
   let page = <AdminPortal />;
-  if (path.startsWith('/public')) {
+  if (isPublic) {
     page = <PublicListings />;
   } else if (path.startsWith('/landlord')) {
     page = <LandlordDashboard />;

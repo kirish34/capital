@@ -332,12 +332,16 @@ tenantRouter.post('/tickets', async (req, res) => {
 
     const { data: tenancy, error: tenancyError } = await supabase
       .from('tenancies')
-      .select('id, unit_id, landlord_id')
+      .select('id, unit_id, landlord_id, tenant_id')
       .eq('id', tenancyId)
       .maybeSingle();
 
     if (tenancyError || !tenancy) {
       return res.status(404).json({ message: 'Tenancy not found' });
+    }
+
+    if (tenancy.tenant_id !== tenantId) {
+      return res.status(403).json({ message: 'Tenancy not linked to this tenant' });
     }
 
     const { data: unit, error: unitError } = await supabase

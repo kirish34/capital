@@ -441,8 +441,9 @@ caretakerRouter.post('/tickets/:ticketId/status', async (req, res) => {
 // GET /caretaker/tickets/:ticketId/messages
 caretakerRouter.get('/tickets/:ticketId/messages', async (req, res) => {
   try {
+    const caretakerId = req.caretakerId;
     const ticketId = Number(req.params.ticketId);
-    if (!ticketId) return res.status(400).json({ message: 'ticketId required' });
+    if (!caretakerId || !ticketId) return res.status(400).json({ message: 'ticketId required' });
 
     const { data: ticket, error: ticketErr } = await supabase
       .from('tickets')
@@ -450,6 +451,14 @@ caretakerRouter.get('/tickets/:ticketId/messages', async (req, res) => {
       .eq('id', ticketId)
       .maybeSingle();
     if (ticketErr || !ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    const { data: cp, error: cpError } = await supabase
+      .from('caretaker_properties')
+      .select('id')
+      .eq('caretaker_id', caretakerId)
+      .eq('property_id', ticket.property_id)
+      .maybeSingle();
+    if (cpError || !cp) return res.status(403).json({ message: 'Not allowed to view this ticket' });
 
     const { data: messages, error } = await supabase
       .from('ticket_messages')
