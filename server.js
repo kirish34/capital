@@ -17,8 +17,10 @@ const app = express();
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
 app.use((req, res, next) => {
   const origin = req.headers.origin || '';
-  const isAllowed = allowedOrigins.length === 0 || allowedOrigins.includes(origin);
-  res.header('Access-Control-Allow-Origin', isAllowed ? origin || '*' : 'null');
+  const hasOrigin = Boolean(origin);
+  // Allow server-to-server requests (no Origin header), e.g., Railway healthchecks.
+  const isAllowed = allowedOrigins.length === 0 || !hasOrigin || allowedOrigins.includes(origin);
+  res.header('Access-Control-Allow-Origin', isAllowed ? (hasOrigin ? origin : '*') : 'null');
   res.header('Vary', 'Origin');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Callback-Token, X-Forwarded-For');
